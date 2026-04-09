@@ -1,0 +1,77 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import networkx as nx
+import random
+
+# Agent Definition
+
+class Agent:
+    def __init__(self, id, belief, bias):
+        self.id = id
+        self.belief = belief 
+        self.bias = bias 
+
+    def update_belief(self, neighbors):
+        if not neighbors:
+            return
+        
+        neighbor_beliefs = [n.belief for n in neighbors]
+        avg_neighbor_belief = np.mean(neighbor_beliefs)
+
+        self.belief = self.bias * self.belief + (1 - self.bias) * avg_neighbor_belief
+
+
+# Create Agents
+
+def create_agents(n):
+    agents = []
+    for i in range(n):
+        belief = np.random.rand() 
+        bias = np.random.uniform(0.6, 0.9) 
+        agents.append(Agent(i, belief, bias))
+    return agents
+
+
+# Create Network
+
+def create_network(n):
+    G = nx.erdos_renyi_graph(n, 0.4)
+    return G
+
+
+
+# Simulation
+
+def run_simulation(num_agents=10, steps=20):
+    agents = create_agents(num_agents)
+    G = create_network(num_agents)
+
+    history = []
+
+    for step in range(steps):
+        beliefs = []
+
+        for i, agent in enumerate(agents):
+            neighbors_idx = list(G.neighbors(i))
+            neighbors = [agents[j] for j in neighbors_idx]
+
+            agent.update_belief(neighbors)
+            beliefs.append(agent.belief)
+
+        history.append(beliefs)
+
+    return np.array(history)
+
+history = run_simulation(num_agents=15, steps=30)
+
+
+# Plot Results
+
+for i in range(history.shape[1]):
+    plt.plot(history[:, i])
+
+plt.xlabel("Time Step")
+plt.ylabel("Belief")
+plt.title("Egocentric Bias Simulation")
+plt.show()
