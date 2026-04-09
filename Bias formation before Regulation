@@ -1,0 +1,65 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. PARAMETERS
+
+num_agents = 20
+timesteps = 30
+beta = 0.8 
+
+# 2. INITIAL BELIEFS
+
+beliefs = np.random.rand(num_agents)
+weights = np.ones((num_agents, num_agents)) / (num_agents - 1)
+np.fill_diagonal(weights, 0)
+history = [beliefs.copy()]
+bias_history = []
+#print(beliefs)
+#print(weights)
+
+
+# 3. BIAS MEASUREMENT FUNCTION
+
+def compute_bias(beliefs):
+    return np.var(beliefs)
+
+
+# 5. SIMULATION LOOP
+
+for t in range(timesteps):
+    new_beliefs = np.zeros(num_agents)
+    
+    for i in range(num_agents):
+        social_influence = np.sum(weights[i] * beliefs)
+        
+       
+        new_beliefs[i] = beta * beliefs[i] + (1 - beta) * social_influence
+    
+    beliefs = new_beliefs
+    
+    history.append(beliefs.copy())
+    bias_history.append(compute_bias(beliefs))
+
+
+# 6. VISUALIZATION
+
+history = np.array(history)
+#print(beliefs)
+#print(weights)
+#print(bias)
+print(bias_history)
+
+plt.figure(figsize=(10, 5))
+for i in range(num_agents):
+    plt.plot(history[:, i])
+plt.title("Belief Evolution of Agents before regulation")
+plt.xlabel("Time")
+plt.ylabel("Belief")
+plt.show()
+
+plt.figure()
+plt.plot(bias_history)
+plt.title("Bias Over Time Before Regulation")
+plt.xlabel("Time")
+plt.ylabel("Bias (Variance)")
+plt.show()
